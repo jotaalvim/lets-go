@@ -2,15 +2,41 @@ package main
 
 import ( 
     "fmt"
-    "net/http"
     "strconv"
+    "net/http"
+    "html/template"
+    "log"
 )
 
 
 func home ( w http.ResponseWriter, _ *http.Request) {
     w.Header().Add("Server","Go")
-    w.Write( [] byte ("Hello world"))
+    
+
+    files := [] string  {
+        "./ui/html/base.tmpl",
+        "./ui/html/pages/home.tmpl",
+        "./ui/html/partials/nav.tmpl",
+    }
+
+    ts, err := template.ParseFiles( files... )
+
+    if err != nil {
+        log.Print(err.Error())
+        http.Error (w,"Internal Server Error", http.StatusInternalServerError )
+        return
+    }
+
+    err = ts.ExecuteTemplate(w,"base",nil)
+    // o ts.Execute escreve o template no body, posso dar parametros de cenas
+    if err != nil {
+        log.Print(err.Error())
+        http.Error (w,"Internal Server Error", http.StatusInternalServerError )
+    }
+
 }
+
+
 
 func create ( w http.ResponseWriter, _ *http.Request) {
     w.Write ( [] byte ("create something"))
