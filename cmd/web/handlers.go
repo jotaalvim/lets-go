@@ -5,13 +5,11 @@ import (
     "strconv"
     "net/http"
     "html/template"
-    "log"
 )
 
-
-func home ( w http.ResponseWriter, _ *http.Request) {
+// posso aceder ao app logger dentro da função
+func (app *application) home ( w http.ResponseWriter, r *http.Request) {
     w.Header().Add("Server","Go")
-    
 
     files := [] string  {
         "./ui/html/base.tmpl",
@@ -20,34 +18,31 @@ func home ( w http.ResponseWriter, _ *http.Request) {
     }
 
     ts, err := template.ParseFiles( files... )
-
     if err != nil {
-        log.Print(err.Error())
-        http.Error (w,"Internal Server Error", http.StatusInternalServerError )
+        app.serverError( w, r, err )
         return
     }
 
     err = ts.ExecuteTemplate(w,"base",nil)
     // o ts.Execute escreve o template no body, posso dar parametros de cenas
     if err != nil {
-        log.Print(err.Error())
-        http.Error (w,"Internal Server Error", http.StatusInternalServerError )
+        app.serverError( w, r, err )
+        return
     }
 
 }
 
 
-
-func create ( w http.ResponseWriter, _ *http.Request) {
+func (app *application) create ( w http.ResponseWriter, _ *http.Request) {
     w.Write ( [] byte ("create something"))
 }
 
-func createPost ( w http.ResponseWriter, _ *http.Request) {
+func (app *application) createPost ( w http.ResponseWriter, _ *http.Request) {
     w.WriteHeader (http.StatusCreated) // cria status code sozinho
     w.Write([] byte ("save a new snippet"))
 }
 
-func view ( w http.ResponseWriter, r *http.Request) {
+func (app *application) view ( w http.ResponseWriter, r *http.Request) {
     id,err := strconv.Atoi( r.PathValue("id") ) 
     if err != nil || id < 1 {
         http.NotFound(w,r)

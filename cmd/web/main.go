@@ -1,32 +1,49 @@
 package main 
 
 import ( 
-    "log"
+    "os"
+    "flag"
+    "log/slog"
     "net/http"
 )
 
 
+type config struct {
+    addr      string
+    staticDir string
+}
+
+type application struct {
+    logger *slog.Logger
+    cfg    *config
+}
+
+
 func main () {
 
-    handler := http.NewServeMux()
-
+    logger := slog.New ( slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+        AddSource: true,
+        Level : slog.LevelDebug,
+    // Debug (descartadas), Info, Warn, Error 
+    }))
     
-    fileServer := http.FileServer( http.Dir("./ui/static/"))
+    var cfg config
+    
+    flag.StringVar( &cfg.addr      ,"addr"      , ":4000"       , "HTTP network adress  ") 
+    flag.StringVar( &cfg.staticDir ,"static-dir", "./ui/static/", "Path to static assets") 
+    flag.Parse()
+    // Também existe flag.Int, flag.Bool...
 
-    handler.Handle(    "GET /static/"   , http.StripPrefix("/static", fileServer)   )
+    app := &application {
+        logger: logger,
+        cfg   : &cfg,
+    }
 
-    handler.HandleFunc("GET  /{$}"      , home       ) 
-    handler.HandleFunc("GET  /view/{id}", view       )
-    handler.HandleFunc("GET  /create"   , create     )
-    handler.HandleFunc("POST /create"   , createPost )
+    logger.Info("Starting server" , slog.String( "hosted_at", "https:://localhost" + app.cfg.addr))
 
-
-
-    log.Println("starting server on port 4000", handler)
-    log.Println("https:://localhost:4000")
-
-    err := http.ListenAndServe( ":4000", handler)
     //func ListenAndServe(addr string, handler Handler) error
+    err := http.ListenAndServe( app.cfg.addr, app.routes())
 
-    log.Fatal(err)
+    logger.Error(err.Error())
+    os.Exit(1)
 }
