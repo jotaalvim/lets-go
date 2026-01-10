@@ -24,11 +24,9 @@ jobs:
         go-version: '1.25'
 
     - name: Download golangci-linter/fmt
-
       run : |
         # install it into ./bin/
         curl -sSfL https://golangci-lint.run/install.sh | sh -s v2.8.0
-
         ./bin/golangci-lint --version
 
     - name: Formater
@@ -38,6 +36,17 @@ jobs:
       run : ./bin/golangci-lint run
 
 
+    - name: Push the code back
+      run: |
+        git config user.name  "jotaalvim"
+        git config user.email "joaoalvim179@proton.me"
+        # Stage, Commit, and Push
+        git add .
+        git commit -m "style and linter"
+        git push
+
+    # devo usar a action oficilal do linter?
+    
           #golangci:
           #  name: lint
           #  runs-on: ubuntu-latest
