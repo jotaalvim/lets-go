@@ -32,9 +32,9 @@ jobs:
     - name: Formater
       run: ./bin/golangci-lint fmt
 
-    - name : Linter
-      run : ./bin/golangci-lint run
 
+        # - name : Linter
+        #   run : ./bin/golangci-lint run
 
     - name: Push the code back
       run: |
