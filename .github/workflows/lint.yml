@@ -31,6 +31,9 @@ jobs:
 
         ./bin/golangci-lint --version
 
+    - name: Formater
+      run: ./bin/golangci-lint fmt
+
     - name : Linter
       run : ./bin/golangci-lint run
 
