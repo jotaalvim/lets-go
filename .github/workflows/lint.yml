@@ -16,7 +16,7 @@ jobs:
     steps:
 
     - name: download code
-    - uses: actions/checkout@v4
+      uses: actions/checkout@v4
 
     - name: Set up Go
       uses: actions/setup-go@v4
@@ -26,12 +26,9 @@ jobs:
     - name: Download golangci-linter/fmt
 
       run : |
-        # binary will be $(go env GOPATH)/bin/golangci-lint
-        curl -sSfL https://golangci-lint.run/install.sh | sh -s -- -b $(go env GOPATH)/bin v2.8.0
-        # or install it into ./bin/
+        # install it into ./bin/
         curl -sSfL https://golangci-lint.run/install.sh | sh -s v2.8.0
-        # In Alpine Linux (as it does not come with curl by default)
-        wget -O- -nv https://golangci-lint.run/install.sh | sh -s v2.8.0
+
         golangci-lint --version
 
     - name : Linter
