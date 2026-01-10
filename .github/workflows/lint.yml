@@ -9,6 +9,9 @@ on:
   pull_request:
     branches: [ "main" ]
 
+permissions:
+  contents: write
+
 jobs:
 
   LinterFormat:
@@ -31,10 +34,12 @@ jobs:
 
     - name: Formater
       run: ./bin/golangci-lint fmt
+      # - name : Linter
+      #   run : ./bin/golangci-lint run
 
 
-        # - name : Linter
-        #   run : ./bin/golangci-lint run
+    - name : remove ./bin/golangci-lint
+      run: rm -rf ./bin
 
     - name: Push the code back
       run: |
