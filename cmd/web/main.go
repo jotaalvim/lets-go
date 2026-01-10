@@ -1,81 +1,78 @@
-package main 
+package main
 
-import ( 
-    "os"
-    "flag"
-    "log/slog"
-    "net/http"
-    "database/sql"
-    "modulo.porreiro/internal/models"
+import (
+	"database/sql"
+	"flag"
+	"log/slog"
+	"modulo.porreiro/internal/models"
+	"net/http"
+	"os"
 
-    _ "github.com/go-sql-driver/mysql"
+	_ "github.com/go-sql-driver/mysql"
 )
 
-
 type config struct {
-    addr      string
-    staticDir string
+	addr      string
+	staticDir string
 }
 
 type application struct {
-    snippets *models.SnippetModel
-    logger   *slog.Logger
-    cfg      *config
+	snippets *models.SnippetModel
+	logger   *slog.Logger
+	cfg      *config
 }
 
-func main () {
+func main() {
 
-    logger := slog.New ( slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
-        AddSource: false,
-        Level : slog.LevelDebug, // Debug (descartadas), Info, Warn, Error 
-    }))
+	logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+		AddSource: false,
+		Level:     slog.LevelDebug, // Debug (descartadas), Info, Warn, Error
+	}))
 
-    var cfg config
-    var dsn string
+	var cfg config
+	var dsn string
 
-    flag.StringVar( &cfg.addr      ,"addr"      , ":4000"       , "HTTP network adress  ") 
-    flag.StringVar( &cfg.staticDir ,"static-dir", "./ui/static/", "Path to static assets") 
-    flag.StringVar( &dsn           , "dsn"      , "web:pass@/snippetbox?parseTime=True", "MySWL data source name")
-    flag.Parse() // Também existe flag.Int, flag.Bool...
+	flag.StringVar(&cfg.addr, "addr", ":4000", "HTTP network adress  ")
+	flag.StringVar(&cfg.staticDir, "static-dir", "./ui/static/", "Path to static assets")
+	flag.StringVar(&dsn, "dsn", "web:pass@/snippetbox?parseTime=True", "MySWL data source name")
+	flag.Parse() // Também existe flag.Int, flag.Bool...
 
-    db, err := openDB (dsn)
-    if err != nil {
-        logger.Error(err.Error())
-        os.Exit(1)
-    }
+	db, err := openDB(dsn)
+	if err != nil {
+		logger.Error(err.Error())
+		os.Exit(1)
+	}
 
-    // deferred function run when exiting the program
-    defer db.Close()
-    
-    app := &application {
-        logger   : logger,
-        cfg      : &cfg,
-        snippets : &models.SnippetModel{ DB : db },
-    }
+	// deferred function run when exiting the program
+	defer db.Close()
 
+	app := &application{
+		logger:   logger,
+		cfg:      &cfg,
+		snippets: &models.SnippetModel{DB: db},
+	}
 
-    logger.Info("Starting server" , slog.String( "hosted_at", "https:://localhost" + app.cfg.addr))
+	logger.Info("Starting server", slog.String("hosted_at", "https:://localhost"+app.cfg.addr))
 
-    //func ListenAndServe(addr string, handler Handler) error
-    err = http.ListenAndServe( app.cfg.addr, app.routes())
+	//func ListenAndServe(addr string, handler Handler) error
+	err = http.ListenAndServe(app.cfg.addr, app.routes())
 
-    logger.Error(err.Error())
-    os.Exit(1)
+	logger.Error(err.Error())
+	os.Exit(1)
 }
 
+func openDB(dsn string) (*sql.DB, error) {
 
-func openDB ( dsn string ) ( *sql.DB, error ) {
-    
-    db, err := sql.Open("mysql",dsn)
-    if err != nil {
-        return nil,err
-    }
+	db, err := sql.Open("mysql", dsn)
+	if err != nil {
+		return nil, err
+	}
 
-    err = db.Ping()
-    if err != nil {
-        db.Close()
-        return nil,err
-    }
+	err = db.Ping()
+	if err != nil {
+		db.Close()
+		return nil, err
+	}
 
-    return db,err
+	return db, err
 }
