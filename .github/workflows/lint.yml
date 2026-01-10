@@ -29,10 +29,10 @@ jobs:
         # install it into ./bin/
         curl -sSfL https://golangci-lint.run/install.sh | sh -s v2.8.0
 
-        golangci-lint --version
+        ./bin/golangci-lint --version
 
     - name : Linter
-      run : golangci-lint run
+      run : ./bin/golangci-lint run
 
 
           #golangci:
