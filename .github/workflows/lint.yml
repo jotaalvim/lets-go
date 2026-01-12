@@ -13,8 +13,6 @@ permissions:
   contents: write
 
 jobs:
-  if: false
-
   LinterFormat:
     runs-on: ubuntu-latest
     steps:
@@ -33,26 +31,29 @@ jobs:
         curl -sSfL https://golangci-lint.run/install.sh | sh -s v2.8.0
         ./bin/golangci-lint --version
 
-    - name: Formater
-      run: ./bin/golangci-lint fmt
+      #- name: Formater
+      #  run: ./bin/golangci-lint fmt
       # - name : Linter
       #   run : ./bin/golangci-lint run
 
-    - name : remove ./bin/golangci-lint
-      run: rm -rf ./bin
+     - name: Check gofmt
+        run: |
+          if [ -n "$(gofmt -l .)" ]; then
+            echo "Go files are not formatted. Run 'gofmt -w .' to fix them."
+            exit 1
+          fi
 
-    - name: Push the code back
-      run: |
-        git config user.name  "jotaalvim"
-        git config user.email "joaoalvim179@proton.me"
-        # Stage, Commit, and Push
-        git add .
-        git commit -m "style and linter"
-        git push
+        #    - name: Push the code back
+        #      run: |
+        #        git config user.name  "jotaalvim"
+        #        git config user.email "joaoalvim179@proton.me"
+        #        # Stage, Commit, and Push
+        #        git add .
+        #        git commit -m "style and linter"
+        #        git push
 
     # devo usar a action oficilal do linter?
     # os commits ficam com uma descrição feia
-    
           #golangci:
           #  name: lint
           #  runs-on: ubuntu-latest
