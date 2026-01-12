@@ -11,8 +11,7 @@ import (
 
 // posso aceder ao app logger dentro da função
 func (app *application) home(w http.ResponseWriter, r *http.Request) {
-	w.Header().Add("Server", "Go")
-
+	//panic("panico oops aqui vau bomba")
 	snippets, err := app.snippets.Latest()
 	if err != nil {
 		app.serverError(w, r, err)
