@@ -37,7 +37,7 @@ jobs:
       #  run : ./bin/golangci-lint run
 
     - name: Check gofmt
-       run: |
+      run: |
          if [ -n "$(gofmt -l .)" ]; then
            echo "Go files are not formatted. Run 'gofmt -w .' to fix them."
            exit 1
