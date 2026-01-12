@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
-	//"html/template"
-
 	"modulo.porreiro/internal/models"
 )
 
@@ -20,28 +18,16 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 		app.serverError(w, r, err)
 		return
 	}
-	for _, snippet := range snippets {
-		fmt.Fprintf(w, "%+v\n\nAKAKAKAK\n", snippet)
-	}
+    snippets , err := app.snippets.Latest()
+    if err != nil {
+        app.serverError(w,r,err)
+        return
+    }
+ 
+    data := app.newTemplateData(r)
+    data.Snippets = snippets
 
-	//files := [] string  {
-	//    "./ui/html/base.tmpl",
-	//    "./ui/html/pages/home.tmpl",
-	//    "./ui/html/partials/nav.tmpl",
-	//}
-
-	//ts, err := template.ParseFiles( files... )
-	//if err != nil {
-	//    app.serverError( w, r, err )
-	//    return
-	//}
-
-	//err = ts.ExecuteTemplate(w,"base",nil)
-	//// o ts.Execute escreve o template no body, posso dar parametros de cenas
-	//if err != nil {
-	//    app.serverError( w, r, err )
-	//    return
-	//}
+    app.render (w,r, http.StatusOK, "home.tmpl", data) 
 
 }
 
@@ -84,6 +70,8 @@ func (app *application) view(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	message := fmt.Sprintf("id = %d\n\n %+v", id, snippet)
-	w.Write([]byte(message))
+    data := app.newTemplateData(r)
+    data.Snippet = snippet
+
+    app.render(w,r,http.StatusOK, "view.tmpl",data)
 }

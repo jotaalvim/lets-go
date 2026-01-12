@@ -1,12 +1,13 @@
 package main
 
-import (
-	"database/sql"
-	"flag"
-	"log/slog"
-	"modulo.porreiro/internal/models"
-	"net/http"
-	"os"
+import ( 
+    "os"
+    "flag"
+    "log/slog"
+    "net/http"
+    "database/sql"
+    "html/template"
+    "modulo.porreiro/internal/models"
 
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -17,9 +18,10 @@ type config struct {
 }
 
 type application struct {
-	snippets *models.SnippetModel
-	logger   *slog.Logger
-	cfg      *config
+    cfg           *config
+    logger        *slog.Logger
+    snippets      *models.SnippetModel
+    templateCache map[string]*template.Template
 }
 
 func main() {
@@ -43,14 +45,20 @@ func main() {
 		os.Exit(1)
 	}
 
-	// deferred function run when exiting the program
-	defer db.Close()
-
-	app := &application{
-		logger:   logger,
-		cfg:      &cfg,
-		snippets: &models.SnippetModel{DB: db},
-	}
+    defer db.Close()
+    
+    templateCache,err := newTemplateCache()
+    if err != nil {
+        logger.Error(err.Error())
+        os.Exit(1)
+    }
+    
+    app := &application {
+        cfg           : &cfg,
+        logger        : logger,
+        snippets      : &models.SnippetModel{ DB : db },
+        templateCache : templateCache,
+    }
 
 	logger.Info("Starting server", slog.String("hosted_at", "https:://localhost"+app.cfg.addr))
 

@@ -13,6 +13,7 @@ permissions:
   contents: write
 
 jobs:
+  if: false
 
   LinterFormat:
     runs-on: ubuntu-latest
@@ -37,7 +38,6 @@ jobs:
       # - name : Linter
       #   run : ./bin/golangci-lint run
 
-
     - name : remove ./bin/golangci-lint
       run: rm -rf ./bin
 
@@ -51,6 +51,7 @@ jobs:
         git push
 
     # devo usar a action oficilal do linter?
+    # os commits ficam com uma descrição feia
     
           #golangci:
           #  name: lint
