@@ -4,19 +4,18 @@ import (
 	"net/http"
 )
 
-func (app *application) routes() *http.ServeMux {
+func (app *application) routes() http.Handler {
 
-	handler := http.NewServeMux()
+	mux := http.NewServeMux()
 
 	fileServer := http.FileServer(http.Dir(app.cfg.staticDir))
 
-	handler.Handle("GET /static/", http.StripPrefix("/static", fileServer))
+	mux.Handle("GET /static/", http.StripPrefix("/static", fileServer))
+	mux.HandleFunc("GET  /{$}", app.home)
+	mux.HandleFunc("GET  /view/{id}", app.view)
+	mux.HandleFunc("GET  /create", app.create)
+	mux.HandleFunc("POST /create", app.createPost)
 
-	handler.HandleFunc("GET  /{$}", app.home)
-	handler.HandleFunc("GET  /view/{id}", app.view)
-	handler.HandleFunc("GET  /create", app.create)
-	handler.HandleFunc("POST /create", app.createPost)
-
-	return handler
+	return app.recoverPanic(app.logRequest(commonHeaders(mux)))
 
 }
