@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+
 	"modulo.porreiro/internal/models"
 )
 
@@ -13,12 +14,6 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Server", "Go")
 
 	snippets, err := app.snippets.Latest()
-
-	if err != nil {
-		app.serverError(w, r, err)
-		return
-	}
-    snippets , err := app.snippets.Latest()
     if err != nil {
         app.serverError(w,r,err)
         return
@@ -27,7 +22,7 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
     data := app.newTemplateData(r)
     data.Snippets = snippets
 
-    app.render (w,r, http.StatusOK, "home.tmpl", data) 
+	app.render(w, r, http.StatusOK, "home.tmpl", data)
 
 }
 
@@ -70,8 +65,8 @@ func (app *application) view(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-    data := app.newTemplateData(r)
-    data.Snippet = snippet
+	data := app.newTemplateData(r)
+	data.Snippet = snippet
 
-    app.render(w,r,http.StatusOK, "view.tmpl",data)
+	app.render(w, r, http.StatusOK, "view.tmpl", data)
 }

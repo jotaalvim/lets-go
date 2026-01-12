@@ -1,13 +1,13 @@
 package main
 
-import ( 
-    "os"
-    "flag"
-    "log/slog"
-    "net/http"
-    "database/sql"
-    "html/template"
-    "modulo.porreiro/internal/models"
+import (
+	"database/sql"
+	"flag"
+	"html/template"
+	"log/slog"
+	"modulo.porreiro/internal/models"
+	"net/http"
+	"os"
 
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -18,10 +18,10 @@ type config struct {
 }
 
 type application struct {
-    cfg           *config
-    logger        *slog.Logger
-    snippets      *models.SnippetModel
-    templateCache map[string]*template.Template
+	cfg           *config
+	logger        *slog.Logger
+	snippets      *models.SnippetModel
+	templateCache map[string]*template.Template
 }
 
 func main() {
@@ -45,20 +45,20 @@ func main() {
 		os.Exit(1)
 	}
 
-    defer db.Close()
-    
-    templateCache,err := newTemplateCache()
-    if err != nil {
-        logger.Error(err.Error())
-        os.Exit(1)
-    }
-    
-    app := &application {
-        cfg           : &cfg,
-        logger        : logger,
-        snippets      : &models.SnippetModel{ DB : db },
-        templateCache : templateCache,
-    }
+	defer db.Close()
+
+	templateCache, err := newTemplateCache()
+	if err != nil {
+		logger.Error(err.Error())
+		os.Exit(1)
+	}
+
+	app := &application{
+		cfg:           &cfg,
+		logger:        logger,
+		snippets:      &models.SnippetModel{DB: db},
+		templateCache: templateCache,
+	}
 
 	logger.Info("Starting server", slog.String("hosted_at", "https:://localhost"+app.cfg.addr))
 
