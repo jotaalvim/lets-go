@@ -5,18 +5,19 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
-	"strings"
-	"unicode/utf8"
 
 	"modulo.porreiro/internal/models"
+	"modulo.porreiro/internal/validator"
 )
 
 type snippetCreateForm struct {
-    Title   string
-    Content string 
-    Expires int
-    FieldErrors map[string]string
-
+	Title   string
+	Content string
+	Expires int
+	//FieldErrors map[string]string
+	// embeding the validator means that snippetCreateForm "inherits" all the felds and methods
+	// posso aceder com form.Valid(), ou então form.Validator.Valid()
+	validator.Validator
 }
 
 ///foo/bar?title=value&content=value .
@@ -37,17 +38,15 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 
 }
 
-
 func (app *application) create(w http.ResponseWriter, r *http.Request) {
 
-	data     := app.newTemplateData(r)
+	data := app.newTemplateData(r)
 
-    data.Form = snippetCreateForm {
-        Expires : 365,
-    }
+	data.Form = snippetCreateForm{
+		Expires: 365,
+	}
 	app.render(w, r, http.StatusOK, "create.tmpl", data)
 }
-
 
 func (app *application) createPost(w http.ResponseWriter, r *http.Request) {
 	// ParseForm parses the raw query from the URL and updates r.Form
@@ -64,34 +63,24 @@ func (app *application) createPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-    form := snippetCreateForm {
-        Title       : r.PostForm.Get("title"),
-        Content     : r.PostForm.Get("content"),
-        Expires     : expires,
-        FieldErrors : map[string]string{},
-    }
-
-	if strings.TrimSpace(form.Title) == "" {
-		form.FieldErrors["title"] = "This field cannot be blank"
-	} else if utf8.RuneCountInString(form.Title) > 100 {
-		form.FieldErrors["title"] = "This field cannot be longer than 100 chars"
+	form := snippetCreateForm{
+		Title:   r.PostForm.Get("title"),
+		Content: r.PostForm.Get("content"),
+		Expires: expires,
+		//FieldErrors: map[string]string{},
 	}
 
-	if strings.TrimSpace(form.Content) == "" {
-		form.FieldErrors["content"] = "This field cannot be blank"
-	}
+	form.CheckField(validator.NotBlank(form.Title), "title", "This field cannot be blank")
+	form.CheckField(validator.MaxChars(form.Title, 100), "title", "This field cannot be longer than 100 chars")
+	form.CheckField(validator.NotBlank(form.Content), "content", "This field cannot be longer than 100 chars")
+	form.CheckField(validator.PermittedValue(form.Expires, 1, 7, 365), "expires", "This field cannot be blank")
 
-	if form.Expires != 1 && form.Expires != 7 && form.Expires != 365 {
-		form.FieldErrors["expires"] = "This field but be equal to 1, 7, or 65"
-	}
-
-	if len(form.FieldErrors) > 0 {
-        data := app.newTemplateData(r)
-        data.Form = form
-        // HTTP status code 422 Unprocessable Entity
-        app.render(w,r, http.StatusUnprocessableEntity, "create.tmpl", data)
+	if !form.Valid() {
+		data := app.newTemplateData(r)
+		data.Form = form
+		// HTTP status code 422 Unprocessable Entity
+		app.render(w, r, http.StatusUnprocessableEntity, "create.tmpl", data)
 		return
-
 	}
 
 	id, err := app.snippets.Insert(form.Title, form.Content, form.Expires)
