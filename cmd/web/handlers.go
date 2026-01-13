@@ -11,6 +11,14 @@ import (
 	"modulo.porreiro/internal/models"
 )
 
+type snippetCreateForm struct {
+    Title   string
+    Content string 
+    Expires int
+    FieldErrors map[string]string
+
+}
+
 ///foo/bar?title=value&content=value .
 //You can retrieve the values for the query string parameters in your handlers via the
 //r.URL.Query().Get()
@@ -29,50 +37,64 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 
 }
 
+
 func (app *application) create(w http.ResponseWriter, r *http.Request) {
 
-	data := app.newTemplateData(r)
+	data     := app.newTemplateData(r)
 
+    data.Form = snippetCreateForm {
+        Expires : 365,
+    }
 	app.render(w, r, http.StatusOK, "create.tmpl", data)
 }
 
+
 func (app *application) createPost(w http.ResponseWriter, r *http.Request) {
-	// Limit the request body size to 4096 bytes
-	r.Body = http.MaxBytesReader(w, r.Body, 4096)
-	// For all requests, ParseForm parses the raw query from the URL and updates r.Form
+	// ParseForm parses the raw query from the URL and updates r.Form
 	err := r.ParseForm()
 	if err != nil {
 		app.clientError(w, http.StatusBadRequest)
 		return
 	}
-	title := r.PostForm.Get("title")
-	content := r.PostForm.Get("content")
+
 	expires, err := strconv.Atoi(r.PostForm.Get("expires"))
 
-	fieldErrors := make(map[string]string)
-	// Slices can be created with the built-in make function
-
-	if strings.TrimSpace(title) == "" {
-		fieldErrors["title"] = "This field cannot be blank"
-	} else if utf8.RuneCountInString(title) > 100 {
-		fieldErrors["title"] = "This field cannot be longer than 100 chars"
+	if err != nil {
+		app.serverError(w, r, err)
+		return
 	}
 
-	if strings.TrimSpace(content) == "" {
-		fieldErrors["content"] = "This field cannot be blank"
+    form := snippetCreateForm {
+        Title       : r.PostForm.Get("title"),
+        Content     : r.PostForm.Get("content"),
+        Expires     : expires,
+        FieldErrors : map[string]string{},
+    }
+
+	if strings.TrimSpace(form.Title) == "" {
+		form.FieldErrors["title"] = "This field cannot be blank"
+	} else if utf8.RuneCountInString(form.Title) > 100 {
+		form.FieldErrors["title"] = "This field cannot be longer than 100 chars"
 	}
 
-	if expires != 1 && expires != 7 && expires != 365 {
-		fieldErrors["expires"] = "This field but be equal to 1, 7, or 65"
+	if strings.TrimSpace(form.Content) == "" {
+		form.FieldErrors["content"] = "This field cannot be blank"
 	}
 
-	if len(fieldErrors) > 0 {
-		fmt.Fprint(w, fieldErrors)
+	if form.Expires != 1 && form.Expires != 7 && form.Expires != 365 {
+		form.FieldErrors["expires"] = "This field but be equal to 1, 7, or 65"
+	}
+
+	if len(form.FieldErrors) > 0 {
+        data := app.newTemplateData(r)
+        data.Form = form
+        // HTTP status code 422 Unprocessable Entity
+        app.render(w,r, http.StatusUnprocessableEntity, "create.tmpl", data)
 		return
 
 	}
 
-	id, err := app.snippets.Insert(title, content, expires)
+	id, err := app.snippets.Insert(form.Title, form.Content, form.Expires)
 
 	if err != nil {
 		app.serverError(w, r, err)
