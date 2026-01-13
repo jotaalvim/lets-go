@@ -9,6 +9,10 @@ import (
 	"modulo.porreiro/internal/models"
 )
 
+///foo/bar?title=value&content=value .
+//You can retrieve the values for the query string parameters in your handlers via the
+//r.URL.Query().Get()
+
 // posso aceder ao app logger dentro da função
 func (app *application) home(w http.ResponseWriter, r *http.Request) {
 	//panic("panico oops aqui vau bomba")
@@ -33,11 +37,20 @@ func (app *application) create(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) createPost(w http.ResponseWriter, r *http.Request) {
-	t := "AKAKKA"
-	c := "AKJHDGFAKJBLAUKBGAJGFAJKGFAKJSDF&%$%&/()(/#&%&/(/&54345678"
-	e := 7
+	// Limit the request body size to 4096 bytes
+	r.Body = http.MaxBytesReader(w, r.Body, 4096)
+	// For all requests, ParseForm parses the raw query from the URL and updates r.Form
+	err := r.ParseForm()
+	if err != nil {
+		app.clientError(w, http.StatusBadRequest)
+		return
+	}
+	title := r.PostForm.Get("title")
+	content := r.PostForm.Get("content")
+	expires, err := strconv.Atoi(r.PostForm.Get("expires"))
 
-	id, err := app.snippets.Insert(t, c, e)
+	id, err := app.snippets.Insert(title, content, expires)
+
 	if err != nil {
 		app.serverError(w, r, err)
 		return
