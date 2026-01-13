@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
+	"unicode/utf8"
 
 	"modulo.porreiro/internal/models"
 )
@@ -13,9 +15,7 @@ import (
 //You can retrieve the values for the query string parameters in your handlers via the
 //r.URL.Query().Get()
 
-// posso aceder ao app logger dentro da função
 func (app *application) home(w http.ResponseWriter, r *http.Request) {
-	//panic("panico oops aqui vau bomba")
 	snippets, err := app.snippets.Latest()
 	if err != nil {
 		app.serverError(w, r, err)
@@ -48,6 +48,29 @@ func (app *application) createPost(w http.ResponseWriter, r *http.Request) {
 	title := r.PostForm.Get("title")
 	content := r.PostForm.Get("content")
 	expires, err := strconv.Atoi(r.PostForm.Get("expires"))
+
+	fieldErrors := make(map[string]string)
+	// Slices can be created with the built-in make function
+
+	if strings.TrimSpace(title) == "" {
+		fieldErrors["title"] = "This field cannot be blank"
+	} else if utf8.RuneCountInString(title) > 100 {
+		fieldErrors["title"] = "This field cannot be longer than 100 chars"
+	}
+
+	if strings.TrimSpace(content) == "" {
+		fieldErrors["content"] = "This field cannot be blank"
+	}
+
+	if expires != 1 && expires != 7 && expires != 365 {
+		fieldErrors["expires"] = "This field but be equal to 1, 7, or 65"
+	}
+
+	if len(fieldErrors) > 0 {
+		fmt.Fprint(w, fieldErrors)
+		return
+
+	}
 
 	id, err := app.snippets.Insert(title, content, expires)
 
