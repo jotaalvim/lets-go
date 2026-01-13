@@ -25,11 +25,11 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func (app *application) create(w http.ResponseWriter, _ *http.Request) {
-	//ss,_ := app.snippets.Latest( )
-	//app.logger.Info(ss)
+func (app *application) create(w http.ResponseWriter, r *http.Request) {
 
-	w.Write([]byte("create something"))
+	data := app.newTemplateData(r)
+
+	app.render(w, r, http.StatusOK, "create.tmpl", data)
 }
 
 func (app *application) createPost(w http.ResponseWriter, r *http.Request) {
