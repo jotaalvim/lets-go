@@ -16,6 +16,7 @@ func (app *application) routes() http.Handler {
 	mux.HandleFunc("GET  /create", app.create)
 	mux.HandleFunc("POST /create", app.createPost)
 
+	// onde ponho o meu 404 render?
 	return app.recoverPanic(app.logRequest(commonHeaders(mux)))
 
 }

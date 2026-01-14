@@ -7,11 +7,24 @@ import (
 	"strconv"
 
 	"modulo.porreiro/internal/models"
+	"modulo.porreiro/internal/validator"
 )
 
-// posso aceder ao app logger dentro da função
+type snippetCreateForm struct {
+	// this tags tell the Decoder how to map the html form values into different fields
+	Title   string `form:"title"`
+	Content string `form:"content"`
+	Expires int    `form:"expires"`
+	// embeding the validator means that snippetCreateForm "inherits" all the felds and methods
+	// posso aceder com form.Valid(), ou também form.Validator.Valid()
+	validator.Validator `form:-`
+}
+
+///foo/bar?title=value&content=value .
+//You can retrieve the values for the query string parameters in your handlers via the
+//r.URL.Query().Get()
+
 func (app *application) home(w http.ResponseWriter, r *http.Request) {
-	//panic("panico oops aqui vau bomba")
 	snippets, err := app.snippets.Latest()
 	if err != nil {
 		app.serverError(w, r, err)
@@ -25,19 +38,51 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func (app *application) create(w http.ResponseWriter, _ *http.Request) {
-	//ss,_ := app.snippets.Latest( )
-	//app.logger.Info(ss)
+func (app *application) create(w http.ResponseWriter, r *http.Request) {
 
-	w.Write([]byte("create something"))
+	data := app.newTemplateData(r)
+
+	data.Form = snippetCreateForm{
+		Expires: 365,
+	}
+	app.render(w, r, http.StatusOK, "create.tmpl", data)
 }
 
 func (app *application) createPost(w http.ResponseWriter, r *http.Request) {
-	t := "AKAKKA"
-	c := "AKJHDGFAKJBLAUKBGAJGFAJKGFAKJSDF&%$%&/()(/#&%&/(/&54345678"
-	e := 7
+	//expires, err := strconv.Atoi(r.PostForm.Get("expires"))
+	//if err != nil {
+	//	app.serverError(w, r, err)
+	//	return
+	//}
+	//form := snippetCreateForm{
+	//	Title:   r.PostForm.Get("title"),
+	//	Content: r.PostForm.Get("content"),
+	//	Expires: expires,
+	//	//FieldErrors: map[string]string{},
+	//}
+	var form snippetCreateForm
 
-	id, err := app.snippets.Insert(t, c, e)
+	err := app.decodePostForm(r, &form)
+	if err != nil {
+		app.clientError(w, http.StatusBadRequest)
+		return
+	}
+
+	form.CheckField(validator.NotBlank(form.Title), "title", "This field cannot be blank")
+	form.CheckField(validator.MaxChars(form.Title, 100), "title", "This field cannot be longer than 100 chars")
+	form.CheckField(validator.NotBlank(form.Content), "content", "This field cannot be longer than 100 chars")
+	form.CheckField(validator.PermittedValue(form.Expires, 1, 7, 365), "expires", "This field cannot be blank")
+
+	if !form.Valid() {
+		data := app.newTemplateData(r)
+		data.Form = form
+		// HTTP status code 422 Unprocessable Entity
+		app.render(w, r, http.StatusUnprocessableEntity, "create.tmpl", data)
+		return
+	}
+
+	id, err := app.snippets.Insert(form.Title, form.Content, form.Expires)
+
 	if err != nil {
 		app.serverError(w, r, err)
 		return

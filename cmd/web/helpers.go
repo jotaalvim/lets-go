@@ -5,6 +5,10 @@ import (
 	"fmt"
 	"net/http"
 	"time"
+
+	"errors"
+
+	"github.com/go-playground/form/v4"
 	// "runtime/debug"
 )
 
@@ -57,4 +61,23 @@ func (app *application) newTemplateData(r *http.Request) templateData {
 		CurrentYear: time.Now().Year(),
 	}
 
+}
+
+func (app *application) decodePostForm(r *http.Request, dst any) error {
+
+	// ParseForm parses the raw query from the URL and updates r.Form
+	err := r.ParseForm()
+	if err != nil {
+		return err
+	}
+
+	err = app.formDecoder.Decode(dst, r.PostForm)
+	if err != nil {
+		var invalidDecoderError *form.InvalidDecoderError
+		if errors.As(err, &invalidDecoderError) {
+			panic(err)
+		}
+		return err
+	}
+	return nil
 }
