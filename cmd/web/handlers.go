@@ -11,13 +11,13 @@ import (
 )
 
 type snippetCreateForm struct {
-	Title   string
-	Content string
-	Expires int
-	//FieldErrors map[string]string
+	// this tags tell the Decoder how to map the html form values into different fields
+	Title   string `form:"title"`
+	Content string `form:"content"`
+	Expires int    `form:"expires"`
 	// embeding the validator means that snippetCreateForm "inherits" all the felds and methods
-	// posso aceder com form.Valid(), ou então form.Validator.Valid()
-	validator.Validator
+	// posso aceder com form.Valid(), ou também form.Validator.Valid()
+	validator.Validator `form:-`
 }
 
 ///foo/bar?title=value&content=value .
@@ -49,25 +49,23 @@ func (app *application) create(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) createPost(w http.ResponseWriter, r *http.Request) {
-	// ParseForm parses the raw query from the URL and updates r.Form
-	err := r.ParseForm()
+	//expires, err := strconv.Atoi(r.PostForm.Get("expires"))
+	//if err != nil {
+	//	app.serverError(w, r, err)
+	//	return
+	//}
+	//form := snippetCreateForm{
+	//	Title:   r.PostForm.Get("title"),
+	//	Content: r.PostForm.Get("content"),
+	//	Expires: expires,
+	//	//FieldErrors: map[string]string{},
+	//}
+	var form snippetCreateForm
+
+	err := app.decodePostForm(r, &form)
 	if err != nil {
 		app.clientError(w, http.StatusBadRequest)
 		return
-	}
-
-	expires, err := strconv.Atoi(r.PostForm.Get("expires"))
-
-	if err != nil {
-		app.serverError(w, r, err)
-		return
-	}
-
-	form := snippetCreateForm{
-		Title:   r.PostForm.Get("title"),
-		Content: r.PostForm.Get("content"),
-		Expires: expires,
-		//FieldErrors: map[string]string{},
 	}
 
 	form.CheckField(validator.NotBlank(form.Title), "title", "This field cannot be blank")
