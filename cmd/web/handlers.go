@@ -41,7 +41,6 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 func (app *application) create(w http.ResponseWriter, r *http.Request) {
 
 	data := app.newTemplateData(r)
-
 	data.Form = snippetCreateForm{
 		Expires: 365,
 	}
@@ -87,6 +86,9 @@ func (app *application) createPost(w http.ResponseWriter, r *http.Request) {
 		app.serverError(w, r, err)
 		return
 	}
+
+	// Context returns the request's context.
+	app.sessionManager.Put(r.Context(), "flash", "Snippet successfully created!")
 
 	newPath := fmt.Sprintf("/view/%d", id)
 	http.Redirect(w, r, newPath, http.StatusSeeOther)
