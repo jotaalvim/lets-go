@@ -1,13 +1,13 @@
 package models
 
 import (
-    "errors"
-    "strings"
 	"database/sql"
+	"errors"
+	"strings"
 	"time"
 
-    "golang.org/x/crypto/bcrypt"
-    "github.com/go-sql-driver/mysql"
+	"github.com/go-sql-driver/mysql"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type User struct {
@@ -24,35 +24,59 @@ type UserModel struct {
 
 func (m *UserModel) Insert(name string, email string, password string) error {
 
-    hashed_password , err := bcrypt.GenerateFromPassword( []byte (password), 12)
-    if err != nil { return err }
-
+	hashed_password, err := bcrypt.GenerateFromPassword([]byte(password), 12)
+	if err != nil {
+		return err
+	}
 
 	stmt := `INSERT INTO users (name, email, hashed_password, created)
              VALUES (?,?,?, UTC_TIMESTAMP())`
 
+	_, err = m.DB.Exec(stmt, name, email, string(hashed_password))
 
-    _, err = m.DB.Exec(stmt, name, email, string(hashed_password))
+	if err != nil {
+		var mySQLError *mysql.MySQLError
+		// check if the error has the mysql type
+		// if it does the error will be asign to that variable
+		if errors.As(err, &mySQLError) {
+			if mySQLError.Number == 1062 && strings.Contains(mySQLError.Message, "users_uc_email") {
+				return ErrDuplicateEmail
+			}
+		}
+		return err
+	}
 
-
-    if err != nil { 
-        var mySQLError *mysql.MySQLError
-        // check if the error has the mysql type
-        // if it does the error will be asign to that variable
-        if errors.As( err, &mySQLError) {
-            if mySQLError.Number == 1062 && strings.Contains( mySQLError.Message, "users_uc_email") {
-                return ErrDuplicateEmail
-            }
-        }
-        return err
-    }
-
-    return nil
+	return nil
 
 }
 
 func (m *UserModel) Authenticate(email string, password string) (int, error) {
-	return 0, nil
+
+	var id int
+	var hashed_password []byte
+
+	stmt := "SELECT id, hashed_password FROM users WHERE email = ?"
+
+	err := m.DB.QueryRow(stmt, email).Scan(&id, &hashed_password)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return 0, ErrInvalidCredentials
+		} else {
+			return 0, err
+		}
+	}
+
+	err = bcrypt.CompareHashAndPassword(hashed_password, []byte(password))
+
+	if err != nil {
+		if errors.Is(err, bcrypt.ErrMismatchedHashAndPassword) {
+			return 0, ErrInvalidCredentials
+		} else {
+			return 0, err
+		}
+	}
+
+	return id, nil
 }
 
 func (m *UserModel) Exists(id int) (bool, error) {
