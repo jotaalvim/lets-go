@@ -17,7 +17,7 @@ func (app *application) routes() http.Handler {
 	mux.Handle("GET  /{$}", app.sessionManager.LoadAndSave(http.HandlerFunc(app.home)))
 	mux.Handle("GET  /view/{id}", app.sessionManager.LoadAndSave(http.HandlerFunc(app.view)))
 	mux.Handle("GET  /create", app.sessionManager.LoadAndSave(http.HandlerFunc(app.create)))
-	mux.Handle("POST /create", app.sessionManager.LoadAndSave(http.HandlerFunc(app.createPost)))
+	mux.Handle("POST /create", app.sessionManager.LoadAndSave(app.requireAuthentication(http.HandlerFunc(app.createPost))))
 
 	mux.Handle("GET  /user/signup", app.sessionManager.LoadAndSave(http.HandlerFunc(app.userSignup)))
 	mux.Handle("POST /user/signup", app.sessionManager.LoadAndSave(http.HandlerFunc(app.userSignupPost)))
@@ -25,7 +25,7 @@ func (app *application) routes() http.Handler {
 	mux.Handle("GET  /user/login", app.sessionManager.LoadAndSave(http.HandlerFunc(app.userLogin)))
 	mux.Handle("POST /user/login", app.sessionManager.LoadAndSave(http.HandlerFunc(app.userLoginPost)))
 
-	mux.Handle("POST /user/logout", app.sessionManager.LoadAndSave(http.HandlerFunc(app.userLogoutPost)))
+	mux.Handle("POST /user/logout", app.sessionManager.LoadAndSave(app.requireAuthentication(http.HandlerFunc(app.userLogoutPost))))
 
 	// onde ponho o meu 404 render?
 	return app.recoverPanic(app.logRequest(commonHeaders(mux)))
