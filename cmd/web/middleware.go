@@ -55,7 +55,7 @@ func (app *application) recoverPanic(next http.Handler) http.Handler {
 }
 
 func (app *application) requireAuthentication(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+    fn := func(w http.ResponseWriter, r *http.Request) {
 		if !app.isAuthenticated(r) {
 			http.Redirect(w, r, "/user/login", http.StatusSeeOther)
 			return
@@ -63,5 +63,6 @@ func (app *application) requireAuthentication(next http.Handler) http.Handler {
 		// this is so that require authentication routes are not stores in users browser cache
 		w.Header().Add("Cache-Control", "no-store")
 		next.ServeHTTP(w, r)
-	})
+	}
+    return http.HandlerFunc(fn)
 }
