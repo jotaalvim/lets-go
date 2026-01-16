@@ -66,6 +66,8 @@ func main() {
 	formDecoder := form.NewDecoder()
 
 	sessionManager := scs.New()
+	// a cookie will not be sent if a user clicks on the site from another website
+	//sessionManager.Cookie.SameSite = http.SameSiteStrictMode
 	sessionManager.Store = mysqlstore.New(db)
 	sessionManager.Lifetime = 12 * time.Hour
 	sessionManager.Cookie.Secure = true
@@ -83,6 +85,7 @@ func main() {
 	tlsConfig := &tls.Config{
 		// encryption curves
 		CurvePreferences: []tls.CurveID{tls.X25519, tls.CurveP256},
+		MinVersion:       tls.VersionTLS13,
 	}
 
 	srv := &http.Server{
