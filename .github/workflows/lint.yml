@@ -1,6 +1,5 @@
 # This workflow will build a golang project
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-go
-name: Go
+#name: Go
 
 on:
   push:
@@ -31,4 +30,4 @@ jobs:
     - name: Run Linter
         uses: golangci/golangci-lint-action@v6
         with:
-          version: latest    
+          version: latest For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-go
