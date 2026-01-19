@@ -1,6 +1,7 @@
 package main
 
 import (
+	"modulo.porreiro/ui"
 	"net/http"
 )
 
@@ -8,8 +9,9 @@ func (app *application) routes() http.Handler {
 
 	mux := http.NewServeMux()
 
-	fileServer := http.FileServer(http.Dir(app.cfg.staticDir))
-	mux.Handle("GET /static/", http.StripPrefix("/static", fileServer))
+	//fileServer := http.FileServer(http.Dir(app.cfg.staticDir))
+	//mux.Handle("GET /static/", http.StripPrefix("/static", fileServer))
+	mux.Handle("GET /static/", http.FileServerFS(ui.Files))
 
 	// LoadAndSave provides middleware which automatically loads and saves
 	// session data for the current request, and communicates the session token

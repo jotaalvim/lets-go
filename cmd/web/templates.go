@@ -2,7 +2,9 @@ package main
 
 import (
 	"html/template"
+	"io/fs"
 	"modulo.porreiro/internal/models"
+	"modulo.porreiro/ui"
 	"path/filepath"
 	"time"
 )
@@ -29,9 +31,8 @@ var functions = template.FuncMap{
 func newTemplateCache() (map[string]*template.Template, error) {
 	cache := map[string]*template.Template{}
 
-	pages, err := filepath.Glob("./ui/html/pages/*.tmpl")
+	pages, err := fs.Glob(ui.Files, "html/pages/*.tmpl")
 	// [ui/html/pages/home.tmpl ui/html/pages/view.tmpl]
-
 	if err != nil {
 		return nil, err
 	}
@@ -40,19 +41,15 @@ func newTemplateCache() (map[string]*template.Template, error) {
 		// extract the filename
 		name := filepath.Base(page)
 
+		patterns := []string{
+			"html/base.tmpl",
+			"html/partials/*.tmpl",
+			page,
+		}
+
 		// parse the template into a template set
-		ts, err := template.New(name).Funcs(functions).ParseFiles("./ui/html/base.tmpl")
-		if err != nil {
-			return nil, err
-		}
+		ts, err := template.New(name).Funcs(functions).ParseFS(ui.Files, patterns...)
 
-		// add partials to this template set
-		ts, err = ts.ParseGlob("./ui/html/partials/*.tmpl")
-		if err != nil {
-			return nil, err
-		}
-
-		ts, err = ts.ParseFiles(page)
 		if err != nil {
 			return nil, err
 		}
