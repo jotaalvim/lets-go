@@ -52,20 +52,17 @@ jobs:
         #        git commit -m "style and linter"
         #        git push
 
-    # devo usar a action oficilal do linter?
-    # os commits ficam com uma descrição feia
-          #golangci:
-          #  name: lint
-          #  runs-on: ubuntu-latest
-          #  steps:
-          #    - uses: actions/checkout@v5
-          #    - uses: actions/setup-go@v6
-          #      with:
-          #        go-version: stable
-
-          #    - name: golangci-lint
-          #      uses: golangci/golangci-lint-action@v9
-          #      with:
-          #        version: v2.6
+  golangci:
+    name: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
+        with:
+          go-version: stable
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v9
+        with:
+          version: v2.6
 
 

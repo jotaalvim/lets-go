@@ -68,12 +68,17 @@ func (app *application) requireAuthentication(next http.Handler) http.Handler {
 	return http.HandlerFunc(fn)
 }
 
-func preventCSRF(next http.Handler) http.Handler {
+func (app *application) preventCSRF(next http.Handler) http.Handler {
 	cop := http.NewCrossOriginProtection()
+
+	//cop.AddTrustedOrigin("https://...")
 
 	cop.SetDenyHandler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("CSRF check failed"))
+		_, err := w.Write([]byte("CSRF check failed"))
+		if err != nil {
+			app.logger.Error(err.Error())
+		}
 	}))
 
 	return cop.Handler(next)

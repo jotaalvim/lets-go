@@ -14,13 +14,13 @@ type userSignupForm struct {
 	Name                string `form:"name"`
 	Email               string `form:"email"`
 	Password            string `form:"password"`
-	validator.Validator `form:-`
+	validator.Validator `form:"-"`
 }
 
 type userLoginForm struct {
 	Email               string `form:"email"`
 	Password            string `form:"password"`
-	validator.Validator `form:-`
+	validator.Validator `form:"-"`
 }
 
 type snippetCreateForm struct {
@@ -29,7 +29,7 @@ type snippetCreateForm struct {
 	Expires int    `form:"expires"`
 	// embeding the validator means that snippetCreateForm "inherits" all the felds and methods
 	// posso aceder com form.Valid(), ou também form.Validator.Valid()
-	validator.Validator `form:-`
+	validator.Validator `form:"-"`
 }
 
 ///foo/bar?title=value&content=value .

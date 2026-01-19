@@ -54,7 +54,11 @@ func main() {
 		os.Exit(1)
 	}
 
-	defer db.Close()
+	defer func() {
+		err = db.Close()
+		logger.Error(err.Error())
+		os.Exit(1)
+	}()
 
 	templateCache, err := newTemplateCache()
 
@@ -114,8 +118,10 @@ func openDB(dsn string) (*sql.DB, error) {
 
 	err = db.Ping()
 	if err != nil {
-		db.Close()
-		return nil, err
+		err2 := db.Close()
+		if err2 != nil {
+			return nil, err2
+		}
 	}
 
 	return db, err

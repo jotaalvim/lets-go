@@ -64,8 +64,14 @@ func (m *SnippetModel) Latest() ([]Snippet, error) {
 	if err != nil {
 		return nil, err
 	}
-	// FIXME
-	defer rows.Close()
+
+	defer func() {
+		err2 := rows.Close()
+
+		if err == nil {
+			err = err2
+		}
+	}()
 
 	var snippets []Snippet
 

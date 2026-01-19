@@ -53,7 +53,12 @@ func (app *application) render(w http.ResponseWriter, r *http.Request, status in
 
 	w.WriteHeader(status)
 
-	buf.WriteTo(w)
+	_, err = buf.WriteTo(w)
+	if err != nil {
+		err = fmt.Errorf("cannot write to buffer")
+		app.serverError(w, r, err)
+		return
+	}
 }
 
 func (app *application) newTemplateData(r *http.Request) templateData {
