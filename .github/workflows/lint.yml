@@ -28,6 +28,6 @@ jobs:
          fi
 
     - name: Run Linter
-        uses: golangci/golangci-lint-action@v6
-        with:
-          version: latest For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-go
+      uses: golangci/golangci-lint-action@v6
+      with:
+        version: latest 
