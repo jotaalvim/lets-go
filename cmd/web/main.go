@@ -27,6 +27,7 @@ type application struct {
 	cfg            *config
 	logger         *slog.Logger
 	snippets       *models.SnippetModel
+	users          *models.UserModel
 	templateCache  map[string]*template.Template
 	formDecoder    *form.Decoder
 	sessionManager *scs.SessionManager
@@ -53,7 +54,11 @@ func main() {
 		os.Exit(1)
 	}
 
-	defer db.Close()
+	defer func() {
+		err = db.Close()
+		logger.Error(err.Error())
+		os.Exit(1)
+	}()
 
 	templateCache, err := newTemplateCache()
 
@@ -65,6 +70,8 @@ func main() {
 	formDecoder := form.NewDecoder()
 
 	sessionManager := scs.New()
+	// a cookie will not be sent if a user clicks on the site from another website
+	//sessionManager.Cookie.SameSite = http.SameSiteStrictMode
 	sessionManager.Store = mysqlstore.New(db)
 	sessionManager.Lifetime = 12 * time.Hour
 	sessionManager.Cookie.Secure = true
@@ -73,6 +80,7 @@ func main() {
 		cfg:            &cfg,
 		logger:         logger,
 		snippets:       &models.SnippetModel{DB: db},
+		users:          &models.UserModel{DB: db},
 		formDecoder:    formDecoder,
 		templateCache:  templateCache,
 		sessionManager: sessionManager,
@@ -81,6 +89,7 @@ func main() {
 	tlsConfig := &tls.Config{
 		// encryption curves
 		CurvePreferences: []tls.CurveID{tls.X25519, tls.CurveP256},
+		MinVersion:       tls.VersionTLS13,
 	}
 
 	srv := &http.Server{
@@ -109,8 +118,10 @@ func openDB(dsn string) (*sql.DB, error) {
 
 	err = db.Ping()
 	if err != nil {
-		db.Close()
-		return nil, err
+		err2 := db.Close()
+		if err2 != nil {
+			return nil, err2
+		}
 	}
 
 	return db, err
