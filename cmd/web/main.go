@@ -4,6 +4,7 @@ import (
 	"crypto/tls"
 	"database/sql"
 	"flag"
+	"html/template"
 	"log/slog"
 	"modulo.porreiro/internal/models"
 	"net/http"
@@ -27,6 +28,7 @@ type application struct {
 	logger         *slog.Logger
 	snippets       *models.SnippetModel
 	users          *models.UserModel
+	templateCache  map[string]*template.Template
 	formDecoder    *form.Decoder
 	sessionManager *scs.SessionManager
 }
@@ -58,6 +60,12 @@ func main() {
 		os.Exit(1)
 	}()
 
+	templateCache, err := newTemplateCache()
+
+	if err != nil {
+		logger.Error(err.Error())
+		os.Exit(1)
+	}
 
 	formDecoder := form.NewDecoder()
 
@@ -74,6 +82,7 @@ func main() {
 		snippets:       &models.SnippetModel{DB: db},
 		users:          &models.UserModel{DB: db},
 		formDecoder:    formDecoder,
+		templateCache:  templateCache,
 		sessionManager: sessionManager,
 	}
 
