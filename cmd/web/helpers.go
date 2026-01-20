@@ -93,8 +93,6 @@ func (app *application) decodePostForm(r *http.Request, dst any) error {
 
 func (app *application) isAuthenticated(r *http.Request) bool {
 	isAuth, ok := r.Context().Value(isAuthenticatedContextKey).(bool)
-
-	app.logger.Info("Is AUtheticated", "KEY", isAuth)
 	if !ok {
 		return false
 	}

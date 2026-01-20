@@ -20,8 +20,15 @@ type templateData struct {
 }
 
 func humanDate(t time.Time) string {
+	if t.IsZero() {
+		return ""
+	}
+
 	// value formatted according to the layout defined by the argument
-	return t.Format("02 Feb 2020 at 16:04")
+	//return t.Format("02 Jan 2006 at 16:04")
+	//FIXME não funciona com outros números
+	//return t.UTC().Format("02 Jan 2006 at 15:04")
+	return t.Format("02 Jan 2006 at 15:04")
 }
 
 var functions = template.FuncMap{
