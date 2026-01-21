@@ -33,8 +33,6 @@ func (app *application) logRequest(next http.Handler) http.Handler {
 			method = r.Method
 			uri    = r.URL.RequestURI()
 		)
-		app.logger.Info("received request", "ip", ip, "proto", proto, "method", method, "uri", uri)
-
 		next.ServeHTTP(w, r)
 	}
 
@@ -70,18 +68,19 @@ func (app *application) requireAuthentication(next http.Handler) http.Handler {
 }
 
 func (app *application) preventCSRF(next http.Handler) http.Handler {
-	cop := http.NewCrossOriginProtection()
+	//cop := http.NewCrossOriginProtection()
 
-	//cop.AddTrustedOrigin("https://...")
-	cop.SetDenyHandler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusBadRequest)
-		_, err := w.Write([]byte("CSRF check failed"))
-		if err != nil {
-			app.logger.Error(err.Error())
-		}
-	}))
+	////cop.AddTrustedOrigin("https://...")
+	//cop.SetDenyHandler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	//	w.WriteHeader(http.StatusBadRequest)
+	//	_, err := w.Write([]byte("CSRF check failed"))
+	//	if err != nil {
+	//		app.logger.Error(err.Error())
+	//	}
+	//}))
 
-	return cop.Handler(next)
+	//return cop.Handler(next)
+	return http.Handler(next)
 	//csrfHandler := nosurf.New(next)
 	//csrfHandler.SetBaseCookie(http.Cookie{
 	//    HttpOnly: true,
@@ -109,7 +108,6 @@ func (app *application) authenticate(next http.Handler) http.Handler {
 			app.serverError(w, r, err)
 			return
 		}
-
 		// an user exists in our database
 		if exists {
 			// create a copy of the context with the authkey = true

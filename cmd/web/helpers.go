@@ -23,13 +23,10 @@ func (app *application) serverError(w http.ResponseWriter, r *http.Request, err 
 	app.logger.Error(err.Error(), "method", method, "uri", uri)
 
 	http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-
 }
 
 func (app *application) clientError(w http.ResponseWriter, status int) {
-
 	http.Error(w, http.StatusText(status), status)
-
 }
 
 func (app *application) render(w http.ResponseWriter, r *http.Request, status int, page string, data templateData) {
@@ -62,14 +59,12 @@ func (app *application) render(w http.ResponseWriter, r *http.Request, status in
 }
 
 func (app *application) newTemplateData(r *http.Request) templateData {
-
 	return templateData{
 		CurrentYear:     time.Now().Year(),
 		Flash:           app.sessionManager.PopString(r.Context(), "flash"),
 		IsAuthenticated: app.isAuthenticated(r),
 		//CSRFToken      : nosurf.Token(r),
 	}
-
 }
 
 func (app *application) decodePostForm(r *http.Request, dst any) error {

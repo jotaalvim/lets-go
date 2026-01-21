@@ -1,6 +1,8 @@
 package main
 
 import (
+	"net/url"
+	"strings"
 	"bytes"
 	"io"
 	"log/slog"
@@ -9,6 +11,9 @@ import (
 	"net/http/httptest"
 	"testing"
 	"time"
+
+	"html"
+	"regexp"
 
 	"github.com/alexedwards/scs/v2"
 	"github.com/go-playground/form/v4"
@@ -109,5 +114,54 @@ func (ts *testServer) get(t *testing.T, urlPath string) testResponse {
 		cookies: res.Cookies(),
 		body:    string(bytes.TrimSpace(body)),
 	}
+
+}
+
+
+
+func (ts *testServer) postForm(t *testing.T, urlPath string, form url.Values) testResponse {
+
+	// the last parameter conains the values that i want to send
+	req, err := http.NewRequest(http.MethodPost, ts.URL+urlPath, strings.NewReader(form.Encode()) )
+	if err != nil {
+		//Marca o teste como FAIL
+		t.Fatal(err)
+	}
+
+	//req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	//req.Header.Set("Sec-Fetch-Site","same-origin")
+
+	//envia e executa um request to the server
+	res, err := ts.Client().Do(req)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer res.Body.Close()
+
+	body, err := io.ReadAll(res.Body)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	return testResponse{
+		status : res.StatusCode,
+		headers: res.Header,
+		cookies: res.Cookies(),
+		body   : string(bytes.TrimSpace(body)),
+	}
+}
+
+
+func extractCRSRFToken(t *testing.T, body string) string {
+
+	csrfTokenRX := regexp.MustCompile(`<input type='hidden' name='csrf_token' value='(.+)'>`)
+
+	matches := csrfTokenRX.FindStringSubmatch(body)
+
+	if len(matches) < 2 {
+		t.Fatal("no csrf token found in body")
+	}
+
+	return html.UnescapeString(matches[1])
 
 }

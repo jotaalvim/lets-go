@@ -187,7 +187,6 @@ func (app *application) userLoginPost(w http.ResponseWriter, r *http.Request) {
 	form.CheckField(validator.Matches(form.Email, validator.EmailRX), "password", "This filed cannot be blank")
 
 	if !form.Valid() {
-
 		data := app.newTemplateData(r)
 		data.Form = form
 		app.render(w, r, http.StatusUnprocessableEntity, "login.tmpl", data)
@@ -201,10 +200,11 @@ func (app *application) userLoginPost(w http.ResponseWriter, r *http.Request) {
 			data := app.newTemplateData(r)
 			data.Form = form
 			app.render(w, r, http.StatusUnprocessableEntity, "login.tmpl", data)
+			return
 		} else {
 			app.serverError(w, r, err)
+			return
 		}
-		return
 	}
 
 	// change the session ID
@@ -228,7 +228,6 @@ func (app *application) userLogoutPost(w http.ResponseWriter, r *http.Request) {
 		app.serverError(w, r, err)
 		return
 	}
-
 	app.sessionManager.Remove(r.Context(), "authenticatedUserID")
 	app.sessionManager.Put(r.Context(), "flash", "You've beeen logged out successsfuly!")
 
