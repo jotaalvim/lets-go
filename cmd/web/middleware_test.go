@@ -34,48 +34,6 @@ func TestCommonHeaders(t *testing.T) {
 	expectedValue := "default-src 'self'; style-src 'self' fonts.googleapis.com; font-src fonts.gstatic.com"
 	assert.Equal(t, res.Header.Get("Content-Security-Policy"), expectedValue)
 
-	expectedValue = "Referrer-Policy"
-	assert.Equal(t, res.Header.Get("origin-when-cross-origin"), expectedValue)
-
-	expectedValue = "X-Content-Type-Options"
-	assert.Equal(t, res.Header.Get("nosniff"), expectedValue)
-
-	expectedValue = "X-Frame-Options"
-	assert.Equal(t, res.Header.Get("deny"), expectedValue)
-
-	expectedValue = "X-XSS-Protection"
-	assert.Equal(t, res.Header.Get("0"), expectedValue)
-
-	expectedValue = "Server"
-	assert.Equal(t, res.Header.Get("Go"), expectedValue)
-
-	assert.Equal(t, res.StatusCode, http.StatusOK)
-
-	body, err := io.ReadAll(res.Body)
-	if err != nil {
-		t.Fatal(err)
-	}
-	body = bytes.TrimSpace(body)
-	assert.Equal(t, string(body), "OK")
-}
-
-func TestCommonHeaders2(t *testing.T) {
-	rr := httptest.NewRecorder()
-	req, err := http.NewRequest(http.MethodGet, "/", nil)
-	if err != nil {
-		t.Fatal(err)
-	}
-	next := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("OK"))
-	})
-	commonHeaders(next).ServeHTTP(rr, req)
-
-	res := rr.Result()
-	defer res.Body.Close()
-
-	expectedValue := "default-src 'self'; style-src 'self' fonts.googleapis.com; font-src fonts.gstatic.com"
-	assert.Equal(t, res.Header.Get("Content-Security-Policy"), expectedValue)
-
 	expectedValue = "origin-when-cross-origin"
 	assert.Equal(t, res.Header.Get("Referrer-Policy"), expectedValue)
 

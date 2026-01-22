@@ -1,14 +1,14 @@
 package main
 
 import (
-	"net/url"
-	"strings"
 	"bytes"
 	"io"
 	"log/slog"
 	"net/http"
 	"net/http/cookiejar"
 	"net/http/httptest"
+	"net/url"
+	"strings"
 	"testing"
 	"time"
 
@@ -117,19 +117,17 @@ func (ts *testServer) get(t *testing.T, urlPath string) testResponse {
 
 }
 
-
-
 func (ts *testServer) postForm(t *testing.T, urlPath string, form url.Values) testResponse {
 
 	// the last parameter conains the values that i want to send
-	req, err := http.NewRequest(http.MethodPost, ts.URL+urlPath, strings.NewReader(form.Encode()) )
+	req, err := http.NewRequest(http.MethodPost, ts.URL+urlPath, strings.NewReader(form.Encode()))
 	if err != nil {
 		//Marca o teste como FAIL
 		t.Fatal(err)
 	}
 
-	//req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	//req.Header.Set("Sec-Fetch-Site","same-origin")
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req.Header.Set("Sec-Fetch-Site", "same-origin")
 
 	//envia e executa um request to the server
 	res, err := ts.Client().Do(req)
@@ -144,18 +142,16 @@ func (ts *testServer) postForm(t *testing.T, urlPath string, form url.Values) te
 	}
 
 	return testResponse{
-		status : res.StatusCode,
+		status:  res.StatusCode,
 		headers: res.Header,
 		cookies: res.Cookies(),
-		body   : string(bytes.TrimSpace(body)),
+		body:    string(bytes.TrimSpace(body)),
 	}
 }
-
 
 func extractCRSRFToken(t *testing.T, body string) string {
 
 	csrfTokenRX := regexp.MustCompile(`<input type='hidden' name='csrf_token' value='(.+)'>`)
-
 	matches := csrfTokenRX.FindStringSubmatch(body)
 
 	if len(matches) < 2 {
@@ -163,5 +159,4 @@ func extractCRSRFToken(t *testing.T, body string) string {
 	}
 
 	return html.UnescapeString(matches[1])
-
 }

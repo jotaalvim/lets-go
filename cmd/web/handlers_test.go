@@ -2,8 +2,8 @@ package main
 
 import (
 	"net/http"
-	"testing"
 	"net/url"
+	"testing"
 
 	"modulo.porreiro/internal/assert"
 )
@@ -34,7 +34,7 @@ type signupTest struct {
 	userPassword string
 	wantStatus   int
 	wantFormTag  string
-}	
+}
 
 func TestView(t *testing.T) {
 
@@ -44,12 +44,11 @@ func TestView(t *testing.T) {
 	defer ts.Close()
 
 	tests := []viewTest{
-
 		{
 			name:       "teste com id 1",
 			urlPath:    "/view/1",
 			wantStatus: http.StatusOK,
-			wantBody:   "aaaaaaaa",
+			wantBody:   "aaaaaaaaaa",
 		},
 		{
 			name:       "id inválido",
@@ -89,14 +88,12 @@ func TestView(t *testing.T) {
 	}
 }
 
-
 const (
 	validName     = "Bob"
-	validPassword = "pass"
+	validPassword = "pass56789"
 	validEmail    = "bob@gmail.com"
 	formTag       = "<form action='/user/signup' method='POST' novalidate>"
 )
-
 
 func TestUserSignUp(t *testing.T) {
 
@@ -105,89 +102,85 @@ func TestUserSignUp(t *testing.T) {
 	ts := newTestServer(t, app.routes())
 	defer ts.Close()
 
-	tests := []signupTest {
+	tests := []signupTest{
 
 		{
-			name         : "Valid Submission",
-			userName     : validName,
-			userEmail    : validEmail,
-			userPassword : validPassword,
-			wantStatus   : http.StatusSeeOther, // redirection
+			name:         "Valid Submission",
+			userName:     validName,
+			userEmail:    validEmail,
+			userPassword: validPassword,
+			wantStatus:   http.StatusSeeOther, // redirection
 		},
 		{
-			name         : "Empty name",
-			userName     : "",
-			userEmail    : validEmail,
-			userPassword : validPassword,
-			wantStatus   : http.StatusUnprocessableEntity,
-			wantFormTag  : formTag,
-			
+			name:         "Empty name",
+			userName:     "",
+			userEmail:    validEmail,
+			userPassword: validPassword,
+			wantStatus:   http.StatusUnprocessableEntity,
+			wantFormTag:  formTag,
 		},
 		{
-			name         : "Empty email",
-			userName     : validName,
-			userEmail    : "",
-			userPassword : validPassword,
-			wantStatus   : http.StatusUnprocessableEntity, 
-			wantFormTag  : formTag,
+			name:         "Empty email",
+			userName:     validName,
+			userEmail:    "",
+			userPassword: validPassword,
+			wantStatus:   http.StatusUnprocessableEntity,
+			wantFormTag:  formTag,
 		},
 		{
-			name         : "Empty email",
-			userName     : validName,
-			userEmail    : "",
-			userPassword : validPassword,
-			wantStatus   : http.StatusUnprocessableEntity, 
-			wantFormTag  : formTag,
+			name:         "Empty email",
+			userName:     validName,
+			userEmail:    "",
+			userPassword: validPassword,
+			wantStatus:   http.StatusUnprocessableEntity,
+			wantFormTag:  formTag,
 		},
 		{
-			name         : "Empty password",
-			userName     : validName,
-			userEmail    : validEmail,
-			userPassword : "",
-			wantStatus   : http.StatusUnprocessableEntity, 
-			wantFormTag  : formTag,
+			name:         "Empty password",
+			userName:     validName,
+			userEmail:    validEmail,
+			userPassword: "",
+			wantStatus:   http.StatusUnprocessableEntity,
+			wantFormTag:  formTag,
 		},
 		{
-			name         : "Invalid email",
-			userName     : validName,
-			userEmail    : "ola tudo bem",
-			userPassword : validPassword,
-			wantStatus   : http.StatusUnprocessableEntity, 
-			wantFormTag  : formTag,
+			name:         "Invalid email",
+			userName:     validName,
+			userEmail:    "ola tudo bem",
+			userPassword: validPassword,
+			wantStatus:   http.StatusUnprocessableEntity,
+			wantFormTag:  formTag,
 		},
 		{
-			name         : "Short password",
-			userName     : validName,
-			userEmail    : validEmail,
-			userPassword : "1234567",
-			wantStatus   : http.StatusUnprocessableEntity, 
-			wantFormTag  : formTag,
+			name:         "Short password",
+			userName:     validName,
+			userEmail:    validEmail,
+			userPassword: "1234567",
+			wantStatus:   http.StatusUnprocessableEntity,
+			wantFormTag:  formTag,
 		},
 	}
 
-	for _,tt := range tests  {
+	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ts.resetClientCookieJar(t)	
+			ts.resetClientCookieJar(t)
 
 			res := ts.get(t, "/user/signup")
 
 			form := url.Values{}
-			form.Add("name",tt.userName)
-			form.Add("email",tt.userEmail)
-			form.Add("password",tt.userPassword)
+			//t.Logf("form: %v", tt)
+			form.Add("name", tt.userName)
+			form.Add("email", tt.userEmail)
+			form.Add("password", tt.userPassword)
 
-			ts.postForm(t, "/user/signup", form)
+			res = ts.postForm(t, "/user/signup", form)
 
 			assert.Equal(t, res.status, tt.wantStatus)
 			assert.StringContains(t, tt.wantFormTag, res.body)
 			//token := extractCRSRFToken (t, res.body )
 			//	t.Logf("CSRF Token: %s",token)
 
-		 })
+		})
 	}
 
 }
-
-
-
-

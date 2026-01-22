@@ -94,7 +94,8 @@ func (app *application) createPost(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) view(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.Atoi(r.PathValue("id"))
+	idStr := r.PathValue("id")
+	id, err := strconv.Atoi(idStr)
 	if err != nil || id < 1 {
 		http.NotFound(w, r)
 		return
@@ -143,6 +144,7 @@ func (app *application) userSignupPost(w http.ResponseWriter, r *http.Request) {
 		data := app.newTemplateData(r)
 		data.Form = form
 		app.render(w, r, http.StatusUnprocessableEntity, "signup.tmpl", data)
+		return
 	}
 
 	err = app.users.Insert(form.Name, form.Email, form.Password)

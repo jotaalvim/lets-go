@@ -19,16 +19,16 @@ func (app *application) routes() http.Handler {
 	// LoadAndSave provides middleware which automatically loads and saves
 	// session data for the current request, and communicates the session token
 	// to and from the client in a cookie.
-	mux.Handle("GET  /{$}", app.sessionManager.LoadAndSave(app.preventCSRF(app.authenticate(http.HandlerFunc(app.home)))))
+	mux.Handle("GET /{$}", app.sessionManager.LoadAndSave(app.preventCSRF(app.authenticate(http.HandlerFunc(app.home)))))
 
-	mux.Handle("GET  /view/{id}", app.sessionManager.LoadAndSave(app.preventCSRF(app.authenticate(http.HandlerFunc(app.view)))))
+	mux.Handle("GET /view/{id}", app.sessionManager.LoadAndSave(app.preventCSRF(app.authenticate(http.HandlerFunc(app.view)))))
 
-	mux.Handle("GET  /user/signup", app.sessionManager.LoadAndSave(app.preventCSRF(app.authenticate(http.HandlerFunc(app.userSignup)))))
+	mux.Handle("GET /user/signup", app.sessionManager.LoadAndSave(app.preventCSRF(app.authenticate(http.HandlerFunc(app.userSignup)))))
 	mux.Handle("POST /user/signup", app.sessionManager.LoadAndSave(app.preventCSRF(app.authenticate(http.HandlerFunc(app.userSignupPost)))))
-	mux.Handle("GET  /user/login", app.sessionManager.LoadAndSave(app.preventCSRF(app.authenticate(http.HandlerFunc(app.userLogin)))))
+	mux.Handle("GET /user/login", app.sessionManager.LoadAndSave(app.preventCSRF(app.authenticate(http.HandlerFunc(app.userLogin)))))
 	mux.Handle("POST /user/login", app.sessionManager.LoadAndSave(app.preventCSRF(app.authenticate(http.HandlerFunc(app.userLoginPost)))))
 
-	mux.Handle("GET  /create", app.sessionManager.LoadAndSave(app.preventCSRF(app.authenticate(http.HandlerFunc(app.create)))))
+	mux.Handle("GET /create", app.sessionManager.LoadAndSave(app.preventCSRF(app.authenticate(http.HandlerFunc(app.create)))))
 	mux.Handle("POST /create", app.sessionManager.LoadAndSave(app.authenticate(app.requireAuthentication(app.preventCSRF(http.HandlerFunc(app.createPost))))))
 	mux.Handle("POST /user/logout", app.sessionManager.LoadAndSave(app.authenticate(app.requireAuthentication(app.preventCSRF(http.HandlerFunc(app.userLogoutPost))))))
 
