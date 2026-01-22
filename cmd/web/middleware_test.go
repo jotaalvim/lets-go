@@ -21,7 +21,10 @@ func TestCommonHeaders(t *testing.T) {
 
 	// handler to responde with 200, ok
 	next := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("OK"))
+		_, err := w.Write([]byte("OK"))
+		if err != nil {
+			t.Fatal(err)
+		}
 	})
 
 	// o midddleware retorna um handler por isso temos que fazer
@@ -29,7 +32,12 @@ func TestCommonHeaders(t *testing.T) {
 	commonHeaders(next).ServeHTTP(rr, req)
 
 	res := rr.Result()
-	defer res.Body.Close()
+	defer func() {
+		err := res.Body.Close()
+		if err != nil {
+			t.Fatal(err)
+		}
+	}()
 
 	expectedValue := "default-src 'self'; style-src 'self' fonts.googleapis.com; font-src fonts.gstatic.com"
 	assert.Equal(t, res.Header.Get("Content-Security-Policy"), expectedValue)

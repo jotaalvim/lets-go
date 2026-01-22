@@ -101,7 +101,12 @@ func (ts *testServer) get(t *testing.T, urlPath string) testResponse {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer res.Body.Close()
+	defer func() {
+		err := res.Body.Close()
+		if err != nil {
+			t.Fatal(err)
+		}
+	}()
 
 	body, err := io.ReadAll(res.Body)
 	if err != nil {
@@ -134,7 +139,12 @@ func (ts *testServer) postForm(t *testing.T, urlPath string, form url.Values) te
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer res.Body.Close()
+	defer func() {
+		err := res.Body.Close()
+		if err != nil {
+			t.Fatal(err)
+		}
+	}()
 
 	body, err := io.ReadAll(res.Body)
 	if err != nil {
@@ -149,6 +159,7 @@ func (ts *testServer) postForm(t *testing.T, urlPath string, form url.Values) te
 	}
 }
 
+// nolint
 func extractCRSRFToken(t *testing.T, body string) string {
 
 	csrfTokenRX := regexp.MustCompile(`<input type='hidden' name='csrf_token' value='(.+)'>`)

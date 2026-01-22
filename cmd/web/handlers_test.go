@@ -95,6 +95,64 @@ const (
 	formTag       = "<form action='/user/signup' method='POST' novalidate>"
 )
 
+var tests = []signupTest{
+	{
+		name:         "Valid Submission",
+		userName:     validName,
+		userEmail:    validEmail,
+		userPassword: validPassword,
+		wantStatus:   http.StatusSeeOther, // redirection
+	},
+	{
+		name:         "Empty name",
+		userName:     "",
+		userEmail:    validEmail,
+		userPassword: validPassword,
+		wantStatus:   http.StatusUnprocessableEntity,
+		wantFormTag:  formTag,
+	},
+	{
+		name:         "Empty email",
+		userName:     validName,
+		userEmail:    "",
+		userPassword: validPassword,
+		wantStatus:   http.StatusUnprocessableEntity,
+		wantFormTag:  formTag,
+	},
+	{
+		name:         "Empty email",
+		userName:     validName,
+		userEmail:    "",
+		userPassword: validPassword,
+		wantStatus:   http.StatusUnprocessableEntity,
+		wantFormTag:  formTag,
+	},
+	{
+		name:         "Empty password",
+		userName:     validName,
+		userEmail:    validEmail,
+		userPassword: "",
+		wantStatus:   http.StatusUnprocessableEntity,
+		wantFormTag:  formTag,
+	},
+	{
+		name:         "Invalid email",
+		userName:     validName,
+		userEmail:    "ola tudo bem",
+		userPassword: validPassword,
+		wantStatus:   http.StatusUnprocessableEntity,
+		wantFormTag:  formTag,
+	},
+	{
+		name:         "Short password",
+		userName:     validName,
+		userEmail:    validEmail,
+		userPassword: "1234567",
+		wantStatus:   http.StatusUnprocessableEntity,
+		wantFormTag:  formTag,
+	},
+}
+
 func TestUserSignUp(t *testing.T) {
 
 	app := newTestApplication(t)
@@ -102,78 +160,19 @@ func TestUserSignUp(t *testing.T) {
 	ts := newTestServer(t, app.routes())
 	defer ts.Close()
 
-	tests := []signupTest{
-
-		{
-			name:         "Valid Submission",
-			userName:     validName,
-			userEmail:    validEmail,
-			userPassword: validPassword,
-			wantStatus:   http.StatusSeeOther, // redirection
-		},
-		{
-			name:         "Empty name",
-			userName:     "",
-			userEmail:    validEmail,
-			userPassword: validPassword,
-			wantStatus:   http.StatusUnprocessableEntity,
-			wantFormTag:  formTag,
-		},
-		{
-			name:         "Empty email",
-			userName:     validName,
-			userEmail:    "",
-			userPassword: validPassword,
-			wantStatus:   http.StatusUnprocessableEntity,
-			wantFormTag:  formTag,
-		},
-		{
-			name:         "Empty email",
-			userName:     validName,
-			userEmail:    "",
-			userPassword: validPassword,
-			wantStatus:   http.StatusUnprocessableEntity,
-			wantFormTag:  formTag,
-		},
-		{
-			name:         "Empty password",
-			userName:     validName,
-			userEmail:    validEmail,
-			userPassword: "",
-			wantStatus:   http.StatusUnprocessableEntity,
-			wantFormTag:  formTag,
-		},
-		{
-			name:         "Invalid email",
-			userName:     validName,
-			userEmail:    "ola tudo bem",
-			userPassword: validPassword,
-			wantStatus:   http.StatusUnprocessableEntity,
-			wantFormTag:  formTag,
-		},
-		{
-			name:         "Short password",
-			userName:     validName,
-			userEmail:    validEmail,
-			userPassword: "1234567",
-			wantStatus:   http.StatusUnprocessableEntity,
-			wantFormTag:  formTag,
-		},
-	}
-
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ts.resetClientCookieJar(t)
 
-			res := ts.get(t, "/user/signup")
+			ts.get(t, "/user/signup")
 
 			form := url.Values{}
-			//t.Logf("form: %v", tt)
+			//t.Logf("form: %v", t	t)
 			form.Add("name", tt.userName)
 			form.Add("email", tt.userEmail)
 			form.Add("password", tt.userPassword)
 
-			res = ts.postForm(t, "/user/signup", form)
+			res := ts.postForm(t, "/user/signup", form)
 
 			assert.Equal(t, res.status, tt.wantStatus)
 			assert.StringContains(t, tt.wantFormTag, res.body)
